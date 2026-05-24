@@ -9,23 +9,23 @@
 - live WEBP to PNG browser processor
 
 ## Phase 2: Core Image Suite
-- PNG to JPG
-- JPG to PNG
-- JPG to WEBP
-- PNG to WEBP
-- AVIF to PNG
-- image compressor
-- resize image
-- crop image
-- rotate image
-- image to PDF
+- [DONE] PNG to JPG
+- [DONE] JPG to PNG
+- [DONE] JPG to WEBP
+- [DONE] PNG to WEBP
+- [DONE] AVIF to PNG
+- [DONE] image compressor
+- [DONE] resize image
+- [DONE] crop image
+- [DONE] rotate image
+- [DONE] image to PDF
 
 ## Phase 3: Premium Image + AI Layer
-- watermark image
+- [DONE] watermark image
 - remove background
 - image upscaler
 - HEIC converter
-- SVG converter
+- [DONE] SVG converter
 - ICO generator
 - GIF maker
 - meme generator

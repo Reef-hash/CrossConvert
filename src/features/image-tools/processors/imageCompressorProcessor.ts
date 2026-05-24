@@ -1,19 +1,19 @@
-import type { FileProcessorAdapter } from '../../../types/processing';
 import { createMimeValidator } from '../validators/imageFileValidator';
 import { canvasToBlob, decodeImage } from './shared';
+import type { FileProcessorAdapter } from '../../../types/processing';
 
-const validateWebp = createMimeValidator(['image/webp'], [/\.webp$/i]);
+const acceptedTypes = ['image/png', 'image/jpeg', 'image/webp'];
 
-export const webpToPngProcessor: FileProcessorAdapter = {
-  id: 'webp-to-png',
-  accepts: ['image/webp'],
-  outputs: ['image/png'],
+export const imageCompressorProcessor: FileProcessorAdapter = {
+  id: 'image-compressor',
+  accepts: acceptedTypes,
+  outputs: ['image/jpeg'],
   supportsPreview: true,
-  validate: validateWebp,
+  validate: createMimeValidator(acceptedTypes, [/\.png$/i, /\.jpe?g$/i, /\.webp$/i]),
   process: async (file, onProgress) => {
     onProgress?.(20);
     const decoded = await decodeImage(file);
-    onProgress?.(55);
+    onProgress?.(50);
 
     const canvas = document.createElement('canvas');
     canvas.width = decoded.width;
@@ -23,14 +23,14 @@ export const webpToPngProcessor: FileProcessorAdapter = {
       decoded.cleanup?.();
       throw new Error('Canvas context is unavailable.');
     }
+
     decoded.draw(context, decoded.width, decoded.height);
     decoded.cleanup?.();
 
     onProgress?.(80);
-    const blob = await canvasToBlob(canvas, 'image/png');
-
+    const blob = await canvasToBlob(canvas, 'image/jpeg', 0.72);
     onProgress?.(100);
     return blob;
   },
-  getOutputFileName: (input) => input.name.replace(/\.webp$/i, '.png'),
+  getOutputFileName: (input) => input.name.replace(/\.[^.]+$/i, '.compressed.jpg'),
 };

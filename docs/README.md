@@ -7,16 +7,18 @@ Use this folder as the single source of truth before any new coding session.
 1. `ARCHITECTURE.md`
 2. `IMPLEMENTATION_STATUS.md`
 3. `AUTH_BILLING_PLAN.md`
-4. `ROADMAP.md`
-5. `SEO_STRATEGY.md`
-6. `PERFORMANCE_PLAN.md`
-7. `FUTURE_IMPROVEMENTS.md`
+4. `HOSTING_STRATEGY.md`
+5. `ROADMAP.md`
+6. `SEO_STRATEGY.md`
+7. `PERFORMANCE_PLAN.md`
+8. `FUTURE_IMPROVEMENTS.md`
 
 ## What Each Doc Answers
 
 - `ARCHITECTURE.md`: How the platform is designed and why.
 - `IMPLEMENTATION_STATUS.md`: What is done now, what is scaffolded, and immediate next actions.
 - `AUTH_BILLING_PLAN.md`: Authentication, subscription tiers, entitlements, and billing rollout strategy.
+- `HOSTING_STRATEGY.md`: Hosting decision, Vercel-first rollout, and future frontend/backend split.
 - `ROADMAP.md`: Multi-phase delivery plan by category.
 - `SEO_STRATEGY.md`: Programmatic SEO structure and growth plan.
 - `PERFORMANCE_PLAN.md`: Runtime and scaling performance strategy.

@@ -29,6 +29,7 @@ WEBP to PNG remains the first live MVP tool, but the platform is now architected
 - docs/ARCHITECTURE.md
 - docs/IMPLEMENTATION_STATUS.md
 - docs/AUTH_BILLING_PLAN.md
+- docs/HOSTING_STRATEGY.md
 - docs/ROADMAP.md
 - docs/FUTURE_IMPROVEMENTS.md
 - docs/SEO_STRATEGY.md

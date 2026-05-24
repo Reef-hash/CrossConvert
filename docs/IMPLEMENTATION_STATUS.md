@@ -4,6 +4,12 @@
 
 Platform architecture is in place for a multi-category SaaS utility product.
 
+## Hosting Decision
+
+- Current hosting direction: Vercel-first for frontend deployment.
+- Future direction: split frontend and backend/worker infrastructure once heavy cloud processing tools are live.
+- Detailed plan: see `HOSTING_STRATEGY.md`.
+
 ## Live Now
 
 - Dynamic route architecture:
@@ -21,11 +27,30 @@ Platform architecture is in place for a multi-category SaaS utility product.
 - Dynamic metadata and schema injection are live.
 - Programmatic sitemap generation is live (`dist/sitemap.xml` on build).
 - Generic file workbench architecture is live.
-- WEBP to PNG processor is live and fully browser-side.
+- Live image tool suite (browser-side) now includes:
+  - WEBP to PNG
+  - PNG to JPG
+  - JPG to PNG
+  - JPG to WEBP
+  - PNG to WEBP
+  - AVIF to PNG
+  - Image Compressor
+  - Resize Image
+  - Crop Image
+  - Rotate Image
+  - Watermark Image
+  - Image to PDF
+  - SVG Converter
 
 ## Scaffolded (Not Live Yet)
 
-- Additional image processors beyond WEBP to PNG.
+- Remaining image tools not live yet:
+  - Remove Background (AI)
+  - Image Upscaler (AI)
+  - HEIC Converter
+  - ICO Generator
+  - GIF Maker
+  - Meme Generator
 - PDF, video, audio, AI, and developer tool runtimes.
 - Backend integrations behind service boundaries:
   - auth
@@ -45,21 +70,26 @@ Platform architecture is in place for a multi-category SaaS utility product.
 
 ## Immediate Next Build Steps
 
-1. Ship next two live image processors:
-   - PNG to JPG
-   - JPG to PNG
-2. Add common image processor utilities:
-   - quality presets
-   - dimension constraints
-   - shared error taxonomy
-3. Add worker-ready processor interface extension for heavy tasks.
-4. Add basic persistence for recent tools and tool usage events.
-5. Add category-specific empty states and launch badges for clearer product readiness.
-6. Start auth and subscription foundation:
+1. Finish remaining image-first promotion tools:
+  - HEIC Converter
+  - ICO Generator
+  - GIF Maker
+  - Meme Generator
+2. Define premium AI image rollout:
+  - Remove Background
+  - Image Upscaler
+3. Add common image processor option controls:
+  - quality presets
+  - resize presets
+  - crop/rotate/watermark UI controls
+4. Add worker-ready processor interface extension for heavy tasks.
+5. Add basic persistence for recent tools and tool usage events.
+6. Add category-specific empty states and launch badges for clearer product readiness.
+7. Start auth and subscription foundation:
   - implement sign in and session retrieval
   - add monthly plan entities and entitlement mapping
   - integrate billing checkout + webhook sync
-7. Add account surfaces:
+8. Add account surfaces:
   - plan badge in navbar
   - billing status in dashboard shell
   - upgrade/paywall states on premium tools
