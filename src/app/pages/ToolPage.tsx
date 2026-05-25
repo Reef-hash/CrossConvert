@@ -7,7 +7,8 @@ import { Card } from '../../components/common/Card';
 import { ToolWorkbench } from '../../features/tool-workbench/components/ToolWorkbench';
 import { ComingSoonPanel } from '../../features/platform/components/ComingSoonPanel';
 import { usePageMetadata } from '../../hooks/usePageMetadata';
-import { createToolMetadata, createToolsMetadata } from '../../features/platform/services/metadataService';
+import { createToolMetadata, createToolsMetadata, getToolFaqItems } from '../../features/platform/services/metadataService';
+import { getComparisonsForTool } from '../../features/platform/services/comparisonRegistry';
 import { getToolBySlug } from '../../features/platform/services/toolRegistry';
 import { getRecommendedTools, recordRecentTool } from '../../features/platform/services/discoveryService';
 import { analyticsService } from '../../services/analytics/analyticsService';
@@ -29,6 +30,8 @@ export const ToolPage = () => {
   if (!tool) return <Navigate to="/tools" replace />;
 
   const recommended = getRecommendedTools(tool.id);
+  const faqs = getToolFaqItems(tool);
+  const intentComparisons = getComparisonsForTool(tool.slug, 2);
   const toolIsLive = tool.availability === 'live' && isProcessorLive(tool.processorId);
 
   return (
@@ -50,6 +53,47 @@ export const ToolPage = () => {
             <SectionTitle eyebrow="Tool Page" title={tool.name} subtitle={tool.longDescription} />
 
             {toolIsLive ? <ToolWorkbench tool={tool} /> : <ComingSoonPanel tool={tool} />}
+
+            <Card className="mt-8">
+              <p className="text-xs font-semibold uppercase tracking-[0.2em] text-zinc-500 dark:text-zinc-300">Frequently asked questions</p>
+              <div className="mt-4 space-y-4">
+                {faqs.map((faq) => (
+                  <div key={faq.question}>
+                    <h2 className="text-base font-semibold text-zinc-900 dark:text-zinc-100">{faq.question}</h2>
+                    <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-300">{faq.answer}</p>
+                  </div>
+                ))}
+              </div>
+            </Card>
+
+            <Card className="mt-8">
+              <p className="text-xs font-semibold uppercase tracking-[0.2em] text-zinc-500 dark:text-zinc-300">Related by intent</p>
+              <div className="mt-4 grid gap-3 md:grid-cols-2">
+                {recommended.slice(0, 4).map((item) => (
+                  <Link
+                    key={item.id}
+                    to={`/tools/${item.slug}`}
+                    className="rounded-xl border border-zinc-200/70 px-4 py-3 text-sm transition hover:border-sky-500 dark:border-zinc-700"
+                  >
+                    <p className="font-medium text-zinc-900 dark:text-zinc-100">{item.name} converter online</p>
+                    <p className="mt-1 text-zinc-600 dark:text-zinc-300">{item.shortDescription}</p>
+                  </Link>
+                ))}
+              </div>
+              {intentComparisons.length > 0 ? (
+                <div className="mt-5 space-y-2 border-t border-zinc-200/70 pt-4 text-sm dark:border-zinc-700">
+                  {intentComparisons.map((comparison) => (
+                    <Link
+                      key={comparison.id}
+                      to={`/compare/${comparison.slug}`}
+                      className="block text-amber-600 transition hover:text-amber-700 dark:text-amber-300 dark:hover:text-amber-200"
+                    >
+                      Read: {comparison.title}
+                    </Link>
+                  ))}
+                </div>
+              ) : null}
+            </Card>
           </div>
 
           <div className="space-y-4">

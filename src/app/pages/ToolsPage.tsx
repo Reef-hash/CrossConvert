@@ -10,6 +10,7 @@ import { getRecentTools, getTrendingDiscovery, searchTools } from '../../feature
 import type { ToolCategoryId } from '../../types/tool';
 import { ToolSearchBar } from '../../features/platform/components/ToolSearchBar';
 import { ToolCard } from '../../features/platform/components/ToolCard';
+import { getAllComparisons } from '../../features/platform/services/comparisonRegistry';
 
 export const ToolsPage = () => {
   usePageMetadata(createToolsMetadata());
@@ -22,6 +23,7 @@ export const ToolsPage = () => {
   const results = useMemo(() => searchTools(query, selectedCategory), [query, selectedCategory]);
   const trending = getTrendingDiscovery();
   const recent = getRecentTools();
+  const comparisons = getAllComparisons();
 
   return (
     <div className="px-4 py-12 md:px-6 md:py-16">
@@ -97,6 +99,17 @@ export const ToolsPage = () => {
                 ) : (
                   <p className="text-sm text-zinc-600 dark:text-zinc-300">Recently opened tools will appear here.</p>
                 )}
+              </div>
+            </Card>
+            <Card>
+              <p className="text-xs font-semibold uppercase tracking-[0.2em] text-emerald-500">Compare formats</p>
+              <div className="mt-4 space-y-3">
+                {comparisons.map((comparison) => (
+                  <Link key={comparison.id} to={`/compare/${comparison.slug}`} className="block rounded-xl border border-zinc-200/70 px-4 py-3 text-sm transition hover:border-emerald-500 dark:border-zinc-700">
+                    <p className="font-medium text-zinc-900 dark:text-zinc-100">{comparison.title}</p>
+                    <p className="mt-1 text-zinc-500 dark:text-zinc-400">{comparison.primaryKeyword}</p>
+                  </Link>
+                ))}
               </div>
             </Card>
           </div>
