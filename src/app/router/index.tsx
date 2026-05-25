@@ -1,6 +1,6 @@
 import { Suspense, lazy } from 'react';
 import { Navigate, Route, Routes } from 'react-router-dom';
-import { Loader } from '../../components/common/Loader';
+import { PageSkeleton } from '../../components/common/PageSkeleton';
 import { App } from '../App';
 
 const HomePage = lazy(async () => import('../pages/HomePage').then((module) => ({ default: module.HomePage })));
@@ -10,11 +10,7 @@ const ToolPage = lazy(async () => import('../pages/ToolPage').then((module) => (
 const ComparisonPage = lazy(async () => import('../pages/ComparisonPage').then((module) => ({ default: module.ComparisonPage })));
 const NotFoundPage = lazy(async () => import('../pages/NotFoundPage').then((module) => ({ default: module.NotFoundPage })));
 
-const PageFallback = () => (
-	<div className="flex min-h-[50vh] items-center justify-center">
-		<Loader />
-	</div>
-);
+const PageFallback = () => <PageSkeleton />;
 
 export const AppRouter = () => (
 	<Suspense fallback={<PageFallback />}>

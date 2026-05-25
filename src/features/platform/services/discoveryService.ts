@@ -3,11 +3,48 @@ import { getFeaturedTools, getTrendingTools } from './toolRegistry';
 import { toolCatalog } from '../catalog/toolCatalog';
 
 const RECENT_TOOLS_KEY = 'crossconvert-recent-tools';
+const SEARCH_CACHE_TTL_MS = 5 * 60 * 1000;
+const SEARCH_CACHE_MAX_ENTRIES = 150;
+
+interface SearchCacheEntry {
+  expiresAt: number;
+  results: ToolDefinition[];
+}
+
+const searchCache = new Map<string, SearchCacheEntry>();
+const recommendedCache = new Map<string, ToolDefinition[]>();
+const trendingCache = new Map<number, ToolDefinition[]>();
+
+const buildSearchCacheKey = (query: string, categoryId?: ToolCategoryId): string =>
+  `${query.trim().toLowerCase()}::${categoryId ?? 'all'}`;
+
+const pruneSearchCache = (): void => {
+  const now = Date.now();
+  for (const [key, entry] of searchCache.entries()) {
+    if (entry.expiresAt <= now) {
+      searchCache.delete(key);
+    }
+  }
+
+  if (searchCache.size <= SEARCH_CACHE_MAX_ENTRIES) return;
+
+  const overflow = searchCache.size - SEARCH_CACHE_MAX_ENTRIES;
+  const keys = Array.from(searchCache.keys());
+  for (const key of keys.slice(0, overflow)) {
+    searchCache.delete(key);
+  }
+};
 
 export const searchTools = (query: string, categoryId?: ToolCategoryId): ToolDefinition[] => {
+  const cacheKey = buildSearchCacheKey(query, categoryId);
+  const cached = searchCache.get(cacheKey);
+  if (cached && cached.expiresAt > Date.now()) {
+    return cached.results;
+  }
+
   const normalizedQuery = query.trim().toLowerCase();
 
-  return toolCatalog.filter((tool) => {
+  const results = toolCatalog.filter((tool) => {
     const inCategory = !categoryId || tool.categoryId === categoryId;
     if (!inCategory) return false;
     if (!normalizedQuery) return true;
@@ -17,15 +54,38 @@ export const searchTools = (query: string, categoryId?: ToolCategoryId): ToolDef
       .toLowerCase()
       .includes(normalizedQuery);
   });
+
+  searchCache.set(cacheKey, {
+    expiresAt: Date.now() + SEARCH_CACHE_TTL_MS,
+    results,
+  });
+  pruneSearchCache();
+
+  return results;
 };
 
 export const getRecommendedTools = (currentToolId?: string): ToolDefinition[] => {
-  return getFeaturedTools()
+  const cacheKey = currentToolId ?? '__all__';
+  const cached = recommendedCache.get(cacheKey);
+  if (cached) return cached;
+
+  const results = getFeaturedTools()
     .filter((tool) => tool.id !== currentToolId)
     .slice(0, 4);
+
+  recommendedCache.set(cacheKey, results);
+  return results;
 };
 
-export const getTrendingDiscovery = (): ToolDefinition[] => getTrendingTools(6);
+export const getTrendingDiscovery = (): ToolDefinition[] => {
+  const limit = 6;
+  const cached = trendingCache.get(limit);
+  if (cached) return cached;
+
+  const results = getTrendingTools(limit);
+  trendingCache.set(limit, results);
+  return results;
+};
 
 export const recordRecentTool = (toolSlug: string): void => {
   const current = readRecentToolSlugs().filter((item) => item !== toolSlug);

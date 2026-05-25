@@ -26,3 +26,11 @@ Large utility platforms fail when every tool page carries the full weight of eve
 - edge/CDN delivery for result assets
 - job polling or websocket updates for long-running backend tasks
 - observability for per-tool performance budgets
+
+## Default UX Performance Standards (Required)
+- lazy-load new route pages by default
+- provide a skeleton fallback for route and section loading states
+- use pagination for searchable or browsable lists that can grow over time
+- add caching for expensive local computations and discovery lookups
+
+These standards are now part of the default implementation baseline for new pages and feature modules.

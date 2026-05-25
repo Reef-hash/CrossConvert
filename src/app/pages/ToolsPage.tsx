@@ -15,15 +15,23 @@ import { getAllComparisons } from '../../features/platform/services/comparisonRe
 export const ToolsPage = () => {
   usePageMetadata(createToolsMetadata());
 
+  const pageSize = 12;
   const [searchParams, setSearchParams] = useSearchParams();
   const [query, setQuery] = useState(searchParams.get('search') ?? '');
   const [selectedCategory, setSelectedCategory] = useState<ToolCategoryId | undefined>();
+  const [currentPage, setCurrentPage] = useState(1);
   const categories = getAllCategories();
 
   const results = useMemo(() => searchTools(query, selectedCategory), [query, selectedCategory]);
   const trending = getTrendingDiscovery();
   const recent = getRecentTools();
   const comparisons = getAllComparisons();
+  const totalPages = Math.max(1, Math.ceil(results.length / pageSize));
+  const safeCurrentPage = Math.min(currentPage, totalPages);
+  const pagedResults = useMemo(() => {
+    const start = (safeCurrentPage - 1) * pageSize;
+    return results.slice(start, start + pageSize);
+  }, [pageSize, results, safeCurrentPage]);
 
   return (
     <div className="px-4 py-12 md:px-6 md:py-16">
@@ -36,6 +44,7 @@ export const ToolsPage = () => {
               value={query}
               onChange={(value) => {
                 setQuery(value);
+                setCurrentPage(1);
                 setSearchParams(value ? { search: value } : {});
               }}
               placeholder="Search image, PDF, AI, developer, or media tools"
@@ -43,7 +52,10 @@ export const ToolsPage = () => {
             <div className="flex flex-wrap gap-2">
               <button
                 type="button"
-                onClick={() => setSelectedCategory(undefined)}
+                onClick={() => {
+                  setSelectedCategory(undefined);
+                  setCurrentPage(1);
+                }}
                 className={`rounded-full px-4 py-2 text-sm ${!selectedCategory ? 'bg-zinc-950 text-white dark:bg-white dark:text-zinc-950' : 'bg-zinc-200/80 text-zinc-700 dark:bg-zinc-800 dark:text-zinc-200'}`}
               >
                 All
@@ -52,7 +64,10 @@ export const ToolsPage = () => {
                 <button
                   key={category.id}
                   type="button"
-                  onClick={() => setSelectedCategory(category.id)}
+                  onClick={() => {
+                    setSelectedCategory(category.id);
+                    setCurrentPage(1);
+                  }}
                   className={`rounded-full px-4 py-2 text-sm ${selectedCategory === category.id ? 'bg-zinc-950 text-white dark:bg-white dark:text-zinc-950' : 'bg-zinc-200/80 text-zinc-700 dark:bg-zinc-800 dark:text-zinc-200'}`}
                 >
                   {category.shortName}
@@ -66,13 +81,45 @@ export const ToolsPage = () => {
           <div>
             <div className="mb-4 flex items-center justify-between gap-4">
               <h2 className="font-display text-2xl font-semibold text-zinc-900 dark:text-zinc-100">Search results</h2>
-              <Badge tone="amber">{results.length} results</Badge>
+              <Badge tone="amber">{results.length} results · page {safeCurrentPage}/{totalPages}</Badge>
             </div>
             <div className="grid gap-4 md:grid-cols-2">
-              {results.map((tool) => (
+              {pagedResults.map((tool) => (
                 <ToolCard key={tool.id} tool={tool} />
               ))}
             </div>
+            {results.length === 0 ? (
+              <p className="mt-4 text-sm text-zinc-600 dark:text-zinc-300">No matching tools found. Try a different keyword or category.</p>
+            ) : (
+              <div className="mt-6 flex flex-wrap items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => setCurrentPage((prev) => Math.max(1, Math.min(totalPages, prev) - 1))}
+                  disabled={safeCurrentPage === 1}
+                  className="rounded-lg border border-zinc-300 px-3 py-1.5 text-sm text-zinc-700 transition hover:border-zinc-500 disabled:cursor-not-allowed disabled:opacity-45 dark:border-zinc-700 dark:text-zinc-200"
+                >
+                  Previous
+                </button>
+                {Array.from({ length: totalPages }, (_, index) => index + 1).slice(0, 8).map((page) => (
+                  <button
+                    key={page}
+                    type="button"
+                    onClick={() => setCurrentPage(page)}
+                    className={`rounded-lg px-3 py-1.5 text-sm transition ${page === safeCurrentPage ? 'bg-zinc-950 text-white dark:bg-white dark:text-zinc-950' : 'border border-zinc-300 text-zinc-700 hover:border-zinc-500 dark:border-zinc-700 dark:text-zinc-200'}`}
+                  >
+                    {page}
+                  </button>
+                ))}
+                <button
+                  type="button"
+                  onClick={() => setCurrentPage((prev) => Math.min(totalPages, Math.min(totalPages, prev) + 1))}
+                  disabled={safeCurrentPage === totalPages}
+                  className="rounded-lg border border-zinc-300 px-3 py-1.5 text-sm text-zinc-700 transition hover:border-zinc-500 disabled:cursor-not-allowed disabled:opacity-45 dark:border-zinc-700 dark:text-zinc-200"
+                >
+                  Next
+                </button>
+              </div>
+            )}
           </div>
 
           <div className="space-y-4">
