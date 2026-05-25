@@ -3,13 +3,25 @@ import { Link } from 'react-router-dom';
 import type { ToolDefinition } from '../../../types/tool';
 import { Badge } from '../../../components/common/Badge';
 import { Card } from '../../../components/common/Card';
+import { prefetchRoute } from '../../../app/router/prefetchRoute';
+import { prefetchProcessorById } from '../../tool-workbench/services/processorRegistry';
 
 interface ToolCardProps {
   tool: ToolDefinition;
 }
 
 export const ToolCard = ({ tool }: ToolCardProps) => (
-  <Link to={`/tools/${tool.slug}`}>
+  <Link
+    to={`/tools/${tool.slug}`}
+    onMouseEnter={() => {
+      prefetchRoute(`/tools/${tool.slug}`);
+      void prefetchProcessorById(tool.processorId);
+    }}
+    onFocus={() => {
+      prefetchRoute(`/tools/${tool.slug}`);
+      void prefetchProcessorById(tool.processorId);
+    }}
+  >
     <Card className="h-full transition duration-300 hover:-translate-y-1 hover:shadow-2xl">
       <div className="flex items-center justify-between gap-3">
         <Badge tone={tool.availability === 'live' ? 'emerald' : tool.availability === 'beta' ? 'sky' : 'zinc'}>

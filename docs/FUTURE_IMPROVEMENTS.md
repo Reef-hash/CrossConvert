@@ -12,6 +12,7 @@
 - queue-aware cloud processing router
 - hybrid execution decision engine based on file size, duration, and user plan
 - resumable uploads for video and large PDF workflows
+- category-sharded tool manifests with lazy route-level metadata loading once catalog scale requires it
 
 ## Product and Accounts
 - user dashboard

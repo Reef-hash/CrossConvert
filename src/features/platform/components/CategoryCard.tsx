@@ -2,6 +2,7 @@ import { Link } from 'react-router-dom';
 import type { ToolCategoryDefinition } from '../../../types/tool';
 import { Card } from '../../../components/common/Card';
 import { CategoryIcon } from './CategoryIcon';
+import { prefetchRoute } from '../../../app/router/prefetchRoute';
 
 interface CategoryCardProps {
   category: ToolCategoryDefinition;
@@ -9,7 +10,11 @@ interface CategoryCardProps {
 }
 
 export const CategoryCard = ({ category, toolCount }: CategoryCardProps) => (
-  <Link to={`/${category.id}`}>
+  <Link
+    to={`/${category.id}`}
+    onMouseEnter={() => prefetchRoute(`/${category.id}`)}
+    onFocus={() => prefetchRoute(`/${category.id}`)}
+  >
     <Card className="h-full transition duration-300 hover:-translate-y-1 hover:shadow-2xl">
       <div className="flex items-start justify-between gap-4">
         <div className="rounded-2xl bg-amber-100 p-3 text-amber-600 dark:bg-amber-500/10 dark:text-amber-300">

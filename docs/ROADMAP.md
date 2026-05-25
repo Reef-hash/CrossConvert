@@ -76,3 +76,9 @@
 - premium billing
 - API marketplace
 - dashboard and admin surfaces
+
+## Phase 8: Performance Scaling (Option 3)
+- split large tool catalog into category/domain manifests
+- lazy-load route-scoped metadata and discovery payloads
+- keep a lightweight summary index for instant search bootstrapping
+- apply chunk-size budgets and monitor route transition timing

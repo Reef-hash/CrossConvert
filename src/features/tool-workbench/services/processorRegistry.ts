@@ -1,36 +1,59 @@
 import type { FileProcessorAdapter } from '../../../types/processing';
-import { avifToPngProcessor } from '../../image-tools/processors/avifToPngProcessor';
-import { cropImageProcessor } from '../../image-tools/processors/cropImageProcessor';
-import { imageCompressorProcessor } from '../../image-tools/processors/imageCompressorProcessor';
-import { imageToPdfProcessor } from '../../image-tools/processors/imageToPdfProcessor';
-import { jpgToPngProcessor } from '../../image-tools/processors/jpgToPngProcessor';
-import { jpgToWebpProcessor } from '../../image-tools/processors/jpgToWebpProcessor';
-import { pngToJpgProcessor } from '../../image-tools/processors/pngToJpgProcessor';
-import { pngToWebpProcessor } from '../../image-tools/processors/pngToWebpProcessor';
-import { resizeImageProcessor } from '../../image-tools/processors/resizeImageProcessor';
-import { rotateImageProcessor } from '../../image-tools/processors/rotateImageProcessor';
-import { svgConverterProcessor } from '../../image-tools/processors/svgConverterProcessor';
-import { watermarkImageProcessor } from '../../image-tools/processors/watermarkImageProcessor';
-import { webpToPngProcessor } from '../../image-tools/processors/webpToPngProcessor';
 
-const processorRegistry: Record<string, FileProcessorAdapter> = {
-  'avif-to-png': avifToPngProcessor,
-  'crop-image': cropImageProcessor,
-  'image-compressor': imageCompressorProcessor,
-  'image-to-pdf': imageToPdfProcessor,
-  'jpg-to-png': jpgToPngProcessor,
-  'jpg-to-webp': jpgToWebpProcessor,
-  'png-to-jpg': pngToJpgProcessor,
-  'png-to-webp': pngToWebpProcessor,
-  'resize-image': resizeImageProcessor,
-  'rotate-image': rotateImageProcessor,
-  'svg-converter': svgConverterProcessor,
-  'watermark-image': watermarkImageProcessor,
-  'webp-to-png': webpToPngProcessor,
+type ProcessorLoader = () => Promise<FileProcessorAdapter>;
+
+const processorLoaders: Record<string, ProcessorLoader> = {
+  'avif-to-png': async () => (await import('../../image-tools/processors/avifToPngProcessor')).avifToPngProcessor,
+  'crop-image': async () => (await import('../../image-tools/processors/cropImageProcessor')).cropImageProcessor,
+  'image-compressor': async () => (await import('../../image-tools/processors/imageCompressorProcessor')).imageCompressorProcessor,
+  'image-to-pdf': async () => (await import('../../image-tools/processors/imageToPdfProcessor')).imageToPdfProcessor,
+  'jpg-to-png': async () => (await import('../../image-tools/processors/jpgToPngProcessor')).jpgToPngProcessor,
+  'jpg-to-webp': async () => (await import('../../image-tools/processors/jpgToWebpProcessor')).jpgToWebpProcessor,
+  'png-to-jpg': async () => (await import('../../image-tools/processors/pngToJpgProcessor')).pngToJpgProcessor,
+  'png-to-webp': async () => (await import('../../image-tools/processors/pngToWebpProcessor')).pngToWebpProcessor,
+  'resize-image': async () => (await import('../../image-tools/processors/resizeImageProcessor')).resizeImageProcessor,
+  'rotate-image': async () => (await import('../../image-tools/processors/rotateImageProcessor')).rotateImageProcessor,
+  'svg-converter': async () => (await import('../../image-tools/processors/svgConverterProcessor')).svgConverterProcessor,
+  'watermark-image': async () => (await import('../../image-tools/processors/watermarkImageProcessor')).watermarkImageProcessor,
+  'webp-to-png': async () => (await import('../../image-tools/processors/webpToPngProcessor')).webpToPngProcessor,
 };
 
-export const getProcessorById = (processorId: string): FileProcessorAdapter | undefined =>
-  processorRegistry[processorId];
+const loadedProcessors = new Map<string, FileProcessorAdapter>();
+const pendingProcessors = new Map<string, Promise<FileProcessorAdapter>>();
+
+export const getProcessorById = async (processorId: string): Promise<FileProcessorAdapter | undefined> => {
+  const loaded = loadedProcessors.get(processorId);
+  if (loaded) return loaded;
+
+  const pending = pendingProcessors.get(processorId);
+  if (pending) return pending;
+
+  const loader = processorLoaders[processorId];
+  if (!loader) return undefined;
+
+  const next = loader()
+    .then((processor) => {
+      loadedProcessors.set(processorId, processor);
+      pendingProcessors.delete(processorId);
+      return processor;
+    })
+    .catch((error) => {
+      pendingProcessors.delete(processorId);
+      throw error;
+    });
+
+  pendingProcessors.set(processorId, next);
+  return next;
+};
+
+export const prefetchProcessorById = async (processorId?: string): Promise<void> => {
+  if (!processorId) return;
+  try {
+    await getProcessorById(processorId);
+  } catch {
+    // Avoid interrupting UI flow for opportunistic prefetch.
+  }
+};
 
 export const isProcessorLive = (processorId?: string): boolean =>
-  Boolean(processorId && processorRegistry[processorId]);
+  Boolean(processorId && processorLoaders[processorId]);

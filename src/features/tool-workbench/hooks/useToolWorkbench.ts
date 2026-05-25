@@ -1,6 +1,6 @@
-import { useCallback, useEffect, useMemo, useReducer, useRef } from 'react';
+import { useCallback, useEffect, useMemo, useReducer, useRef, useState } from 'react';
 import type { ToolDefinition } from '../../../types/tool';
-import type { FileProcessingTask } from '../../../types/processing';
+import type { FileProcessingTask, FileProcessorAdapter } from '../../../types/processing';
 import { useToast } from '../../../hooks/useToast';
 import { analyticsService } from '../../../services/analytics/analyticsService';
 import { getProcessorById } from '../services/processorRegistry';
@@ -79,9 +79,44 @@ const createTaskId = (): string => `${Date.now()}-${Math.random().toString(16).s
 
 export const useToolWorkbench = (tool: ToolDefinition) => {
   const [state, dispatch] = useReducer(reducer, initialState);
+  const [processor, setProcessor] = useState<FileProcessorAdapter | undefined>();
+  const [isProcessorLoading, setIsProcessorLoading] = useState(false);
   const tasksRef = useRef(state.tasks);
   const { notify } = useToast();
-  const processor = tool.processorId ? getProcessorById(tool.processorId) : undefined;
+
+  useEffect(() => {
+    let cancelled = false;
+
+    const loadProcessor = async () => {
+      if (!tool.processorId) {
+        setProcessor(undefined);
+        setIsProcessorLoading(false);
+        return;
+      }
+
+      setIsProcessorLoading(true);
+      try {
+        const next = await getProcessorById(tool.processorId);
+        if (!cancelled) {
+          setProcessor(next);
+        }
+      } catch {
+        if (!cancelled) {
+          setProcessor(undefined);
+        }
+      } finally {
+        if (!cancelled) {
+          setIsProcessorLoading(false);
+        }
+      }
+    };
+
+    void loadProcessor();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [tool.processorId]);
 
   useEffect(() => {
     tasksRef.current = state.tasks;
@@ -98,7 +133,7 @@ export const useToolWorkbench = (tool: ToolDefinition) => {
 
   const addFiles = useCallback(
     (files: File[]) => {
-      if (!processor || files.length === 0) return;
+      if (!processor || files.length === 0 || isProcessorLoading) return;
 
       const nextTasks: FileProcessingTask[] = files.map((file) => {
         const validation = processor.validate(file);
@@ -123,7 +158,7 @@ export const useToolWorkbench = (tool: ToolDefinition) => {
         });
       }
     },
-    [notify, processor],
+    [isProcessorLoading, notify, processor],
   );
 
   const removeTask = useCallback((taskId: string) => {
@@ -148,6 +183,15 @@ export const useToolWorkbench = (tool: ToolDefinition) => {
       notify({
         title: 'Processor unavailable',
         description: 'This tool is scaffolded, but the runtime processor is not live yet.',
+        variant: 'info',
+      });
+      return;
+    }
+
+    if (isProcessorLoading) {
+      notify({
+        title: 'Loading processor',
+        description: 'The processing engine is still loading. Please try again in a moment.',
         variant: 'info',
       });
       return;
@@ -201,7 +245,7 @@ export const useToolWorkbench = (tool: ToolDefinition) => {
       description: 'Your output files are ready to download.',
       variant: 'success',
     });
-  }, [notify, processor, tool.id]);
+  }, [isProcessorLoading, notify, processor, tool.id]);
 
   const completedCount = useMemo(
     () => state.tasks.filter((task) => task.status === 'done').length,
@@ -213,6 +257,7 @@ export const useToolWorkbench = (tool: ToolDefinition) => {
     isProcessing: state.isProcessing,
     completedCount,
     processor,
+    isProcessorLoading,
     addFiles,
     removeTask,
     clearAll,

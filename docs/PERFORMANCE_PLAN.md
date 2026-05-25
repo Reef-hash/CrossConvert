@@ -19,6 +19,7 @@ Large utility platforms fail when every tool page carries the full weight of eve
 - route-level code splitting
 - modular feature folders for domain-based loading
 - future tool-specific lazy processors for larger utilities
+- Option 3 plan: when tool count grows significantly, split tool catalogs/manifests by domain and lazy-load route-scoped metadata
 
 ## Future Scaling Strategy
 - worker pool for image and lightweight media operations
@@ -26,6 +27,7 @@ Large utility platforms fail when every tool page carries the full weight of eve
 - edge/CDN delivery for result assets
 - job polling or websocket updates for long-running backend tasks
 - observability for per-tool performance budgets
+- Option 3 trigger: execute catalog partitioning and on-demand metadata loading once catalog size reaches ~120+ tools or route chunk growth starts hurting navigation smoothness
 
 ## Default UX Performance Standards (Required)
 - lazy-load new route pages by default

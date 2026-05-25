@@ -2,13 +2,14 @@ import { Suspense, lazy } from 'react';
 import { Navigate, Route, Routes } from 'react-router-dom';
 import { PageSkeleton } from '../../components/common/PageSkeleton';
 import { App } from '../App';
+import { loadCategoryPage, loadComparisonPage, loadHomePage, loadNotFoundPage, loadToolPage, loadToolsPage } from './pageLoaders';
 
-const HomePage = lazy(async () => import('../pages/HomePage').then((module) => ({ default: module.HomePage })));
-const ToolsPage = lazy(async () => import('../pages/ToolsPage').then((module) => ({ default: module.ToolsPage })));
-const CategoryPage = lazy(async () => import('../pages/CategoryPage').then((module) => ({ default: module.CategoryPage })));
-const ToolPage = lazy(async () => import('../pages/ToolPage').then((module) => ({ default: module.ToolPage })));
-const ComparisonPage = lazy(async () => import('../pages/ComparisonPage').then((module) => ({ default: module.ComparisonPage })));
-const NotFoundPage = lazy(async () => import('../pages/NotFoundPage').then((module) => ({ default: module.NotFoundPage })));
+const HomePage = lazy(loadHomePage);
+const ToolsPage = lazy(loadToolsPage);
+const CategoryPage = lazy(loadCategoryPage);
+const ToolPage = lazy(loadToolPage);
+const ComparisonPage = lazy(loadComparisonPage);
+const NotFoundPage = lazy(loadNotFoundPage);
 
 const PageFallback = () => <PageSkeleton />;
 
